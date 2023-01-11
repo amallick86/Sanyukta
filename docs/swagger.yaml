@@ -1,0 +1,301 @@
+basePath: /
+definitions:
+  api.Err:
+    properties:
+      error:
+        type: string
+    type: object
+  api.HelloResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  api.SuccessResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  api.createAccountRequest:
+    properties:
+      Email:
+        type: string
+      FirstName:
+        type: string
+      LastName:
+        type: string
+      UserName:
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - Email
+    - FirstName
+    - LastName
+    - UserName
+    - password
+    type: object
+  api.createAccountResponse:
+    properties:
+      CreatedAt:
+        type: string
+      Email:
+        type: string
+      FirstName:
+        type: string
+      IsVerified:
+        type: boolean
+      LastName:
+        type: string
+      UID:
+        type: string
+      UserName:
+        type: string
+    type: object
+  api.loginRequest:
+    properties:
+      Password:
+        minLength: 6
+        type: string
+      UserNameOREmail:
+        type: string
+    required:
+    - Password
+    - UserNameOREmail
+    type: object
+  api.loginResponse:
+    properties:
+      accessToken:
+        type: string
+      accessTokenExpiresAt:
+        type: string
+      refreshToken:
+        type: string
+      refreshTokenExpiresAt:
+        type: string
+      session_id:
+        type: string
+      user:
+        $ref: '#/definitions/api.createAccountResponse'
+    type: object
+  api.renewAccessTokenRequest:
+    properties:
+      refresh_token:
+        type: string
+    required:
+    - refresh_token
+    type: object
+  api.renewAccessTokenResponse:
+    properties:
+      access_token:
+        type: string
+      access_token_expires_at:
+        type: string
+    type: object
+  api.sendOTPRequest:
+    properties:
+      Email:
+        type: string
+    required:
+    - Email
+    type: object
+  api.sendOTPResponse:
+    properties:
+      ExpiredAt:
+        type: string
+      Message:
+        type: string
+    type: object
+  api.verifyOTPRequest:
+    properties:
+      Email:
+        type: string
+      Otp:
+        type: integer
+    required:
+    - Email
+    - Otp
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  title: Country API
+  version: "1.0"
+paths:
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      operationId: Login
+      parameters:
+      - description: DeviceId
+        in: query
+        name: deviceId
+        required: true
+        type: string
+      - description: Login request
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.loginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.loginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Err'
+      summary: login and generate token with JWT
+      tags:
+      - AUTH
+  /auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      operationId: Renew Token
+      parameters:
+      - description: renew access token by refresh token
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.renewAccessTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.renewAccessTokenResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Err'
+      summary: renew token
+      tags:
+      - AUTH
+  /auth/signup:
+    post:
+      consumes:
+      - application/json
+      operationId: CreateUser
+      parameters:
+      - description: create user
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.createAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api.sendOTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Err'
+      summary: create a new user
+      tags:
+      - AUTH
+  /auth/verification/send-otp:
+    post:
+      consumes:
+      - application/json
+      operationId: SendOTP
+      parameters:
+      - description: send otp
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.sendOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.sendOTPResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Err'
+      summary: send otp
+      tags:
+      - AUTH
+  /auth/verification/verify-otp:
+    post:
+      consumes:
+      - application/json
+      operationId: VerifyOTP
+      parameters:
+      - description: email
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.verifyOTPRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.SuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Err'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Err'
+      summary: verify otp
+      tags:
+      - AUTH
+  /hello:
+    get:
+      operationId: Hello
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.HelloResponse'
+      summary: print hello world
+      tags:
+      - Hello
+schemes:
+- http
+- https
+securityDefinitions:
+  bearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

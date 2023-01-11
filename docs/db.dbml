@@ -1,0 +1,252 @@
+Project Sanyukta {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Sanyukta Database
+'''
+}
+
+Table Gender as gender {
+  ID integer [pk,increment]
+  gender varchar [unique, NOT NULL]
+}
+
+Table MaritalStatus as maritalstatus {
+  ID integer [pk,increment]
+  maritalstatus varchar [unique, NOT NULL]
+}
+
+Table Religion as religion {
+  ID integer [pk,increment]
+  religion varchar [unique, NOT NULL]
+}
+
+Table Caste as caste {
+  ID integer [pk,increment]
+  caste varchar [unique, NOT NULL]
+}
+
+Table HigherEducation as education {
+  ID integer [pk,increment]
+  education varchar [unique, NOT NULL]
+}
+
+Table Profession as profession {
+  ID integer [pk,increment]
+  profession varchar [unique, NOT NULL]
+}
+
+Table Country as country {
+  ID integer [pk,increment]
+  country varchar [unique, NOT NULL]
+  ISO2 varchar [NOT NULL]
+}
+
+Table State as state {
+  ID integer [pk,increment]
+  CountryID integer [ref: > country.ID]
+  state varchar [NOT NULL]
+}
+
+Table ResidingStatus as residingstatus {
+  ID integer [pk,increment]
+  residingstatus varchar [unique, NOT NULL]
+}
+
+Table Zodiac as zodiac {
+  ID integer [pk,increment]
+  zodiac varchar [unique, NOT NULL]
+}
+
+Table MatchesStatus as matchesstatus{
+  ID integer [PK, increment]
+  status varchar [unique, NOT NULL]
+}
+
+Table Features as features {
+   ID integer [pk,increment]
+   feature varchar [unique, NOT NULL]
+}
+Table SubscriptionTypes as subscriptiontypes {
+   ID integer [pk,increment]
+   Type varchar [unique, NOT NULL]
+}
+Table Subscription as subscription {
+ ID integer [pk,increment]
+ TypeID integer [ref: > subscriptiontypes.ID]
+ Price integer [NOT NULL]
+ Duration varchar [NOT NULL]
+}
+
+Table SubscriptionFeatures  as subscriptionfeatures{
+  ID integer [pk,increment]
+  SubscriptionID integer [ref: > subscription.ID]
+  FeaturesID integer [ref: > features.ID]
+}
+
+Table  User as user   {
+  UID uuid [PK, default: `uuid_generate_v4 ()`]
+  FirstName varchar [NOT NULL]
+  LastName varchar [NOT NULL]
+  Email varchar [unique, NOT NULL]
+   IsVerified bool [NOT NULL, default: false]
+  GoogelID varchar [unique, NOT NULL]
+  SubscriptionID integer [ref: > subscription.ID, default: 0]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table EmailOTP as emailOtp {
+  ID integer [pk]
+  UID uuid
+  OTP integer [NOT NULL]
+  CountOfDay integer [NOT NULL]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+  ExpiredAt timestamptz [NOT NULL]
+    }
+
+Table UserPhone as userphone {
+ ID integer [pk,increment]
+ UID uuid [ref: > user.UID]
+ number integer [NOT NULL]
+ IsVerfied bool [NOT NULL, default: false]
+ OTP varchar [NOT NULL]
+ NextOTP timestamptz [NOT NULL]
+}
+
+Table UserDetails as userdetails {
+  UDID integer [PK]
+  UID uuid [ref: - user.UID]
+  Bio text [NOT NULL]
+  DateOfBirth date [NOT NULL]
+  Gender integer [ref: > gender.ID]
+  Child integer [NOT NULL, default:0]
+  Siblings integer [NOT NULL, default:0]
+  Height varchar [NOT NULL]
+  Religion integer [ref: > religion.ID]
+  Caste integer [ref:> caste.ID]
+  Zodiac integer [ref: > zodiac.ID]
+  MaritalStatus integer [ref: > maritalstatus.ID]
+  HigherEducation integer [ref: > education.ID]
+  Profession integer [ref: > profession.ID]
+  HomeCountry integer [ref: > country.ID]
+  HomeState integer [ref: > state.ID]
+  ResidingCountry integer [ref: > country.ID]
+  ResidingState integer [ref: > state.ID ]
+  ResidingStatus integer [ref: > residingstatus.ID]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+  UpdatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table Sessions as sessions {
+  ID uuid [PK]
+  UID uuid [ref: > user.UID]
+  RefreshToken varchar [NOT NULL]
+  UserAgent varchar [NOT NULL]
+  ClientIP varchar [NOT NULL]
+  IsBlocked bool [NOT NULL, default: false]
+  ExpiresAt timestamptz [NOT NULL]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table FCToken as fctoken {
+  ID integer [PK, increment]
+  UID uuid [ref: > user.UID]
+  UserAgent varchar [NOT NULL]
+  ClientIP varchar [NOT NULL]
+  Token varchar [NOT NULL]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table Matches as matches {
+  ID integer [PK, increment]
+  SenderID uuid [ref: > user.UID]
+  ReceiverID uuid [ref: > user.UID]
+  StatusID integer [ref: > matchesstatus.ID]
+  IsRead bool [NOT NULL, default:false]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+  UpdatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table Block as block {
+  ID integer [PK, increment]
+  UID uuid [ref: > user.UID]
+  BlockedID uuid [ref: > user.UID]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+  UpdatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table Favourite as favourite {
+  ID integer [PK, increment]
+  UserID uuid [ref: > user.UID]
+  ProfileID uuid [ref: > user.UID]
+  Favourite bool [NOT NULL, default: true]
+  IsRead bool [NOT NULL, default:false]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+  UpdatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table History as history {
+  ID integer [PK, increment]
+  UserID uuid [ref: > user.UID]
+  ProfileID uuid [ref: - user.UID]
+  VisitedTime integer [NOT NULL]
+  IsRead bool [NOT NULL, default:false]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+  UpdatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table PaymentMethod as paymentmethod {
+  ID integer [PK, increment]
+  Method varchar [NOT NULL]
+}
+
+Table Payment as payment {
+  ID integer [PK, increment]
+  UID uuid [ref: > user.UID]
+  Method integer [ref: > paymentmethod.ID]
+  SubscriptionID integer [ref: > subscription.ID]
+  AmountPaied integer [NOT NULL]
+  TxID varchar [NOT NULL]
+  ExpiresAt timestamptz [NOT NULL]
+  PaidAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table Message as message {
+ ID integer [PK, increment]
+ SenderID uuid [ref: > user.UID]
+ ReceiverID uuid [ref: > user.UID]
+ Data text [NOT NULL]
+ CreatedAt timestamptz [NOT NULL, default: `now()`]
+ UpdatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+Table MessageRead as messageread {
+  ID integer [PK, increment]
+  MessageID integer [ref: > Message.ID]
+  UID uuid [ref: > user.UID]
+}
+
+Table MessageDelete as messagedelete {
+  ID integer [PK, increment]
+  MessageID integer [ref: > Message.ID]
+  UID uuid [ref: > user.UID]
+}
+Table NotificationType as notificationtype {
+  ID integer [PK, increment]
+  Type varchar [NOT NULL]
+}
+Table NotificationStatus as notificationstatus {
+  ID integer [PK, increment]
+  Status varchar [NOT NULL]
+}
+Table Notification as notification {
+  ID integer [PK, increment]
+  UID uuid [ref: > user.UID]
+  ProfileID uuid [ref: > user.UID]
+  NotificationType integer [ref: > notificationtype.ID]
+  NotificationMessage text
+  IsRead bool [NOT NULL, default: false]
+  NotificationStatus integer [ref: > notificationstatus.ID]
+  CreatedAt timestamptz [NOT NULL, default: `now()`]
+}
+
+
